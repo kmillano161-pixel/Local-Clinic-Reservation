@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+
 
 const pad2 = (n) => String(n).padStart(2, '0')
 
@@ -41,6 +42,25 @@ export default function Calendar({
 
   const [viewDate, setViewDate] = useState(() => startOfMonth(init))
   const [selectedISO, setSelectedISO] = useState(() => toISODate(init))
+
+  // Local notes by ISO date (demo-only)
+  const [notes, setNotes] = useState(() => {
+    try {
+      const raw = window.localStorage.getItem('clinic_calendar_notes')
+      return raw ? JSON.parse(raw) : {}
+    } catch {
+      return {}
+    }
+  })
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('clinic_calendar_notes', JSON.stringify(notes))
+    } catch {
+      // ignore
+    }
+  }, [notes])
+
 
   const monthLabel = useMemo(() => {
     return viewDate.toLocaleDateString(undefined, {
@@ -159,6 +179,29 @@ export default function Calendar({
         })}
       </div>
 
+      {/* Notes panel (for the selected day) */}
+      <div className="cal__notes" aria-live="polite">
+        <div className="cal__notesHeader">
+          <span className="cal__notesTitle">Notes for</span>
+          <span className="cal__notesDate">{selectedISO}</span>
+        </div>
+
+        <div className="cal__notesBody">
+          <textarea
+            className="cal__textarea"
+            rows={3}
+            value={notes[selectedISO] ?? ''}
+            onChange={(e) => {
+              const v = e.target.value
+              setNotes((prev) => ({ ...prev, [selectedISO]: v }))
+            }}
+            placeholder="Add a note for this date..."
+          />
+
+          <div className="cal__notesHint">Saved locally for demo purposes.</div>
+        </div>
+      </div>
+
       <div className="cal__legend" aria-live="polite">
         <div className="cal__legendLine">
           <span className="cal__pill cal__pill--today">Today</span>
@@ -166,10 +209,12 @@ export default function Calendar({
         </div>
       </div>
 
+
       <style>{`
         .cal {
           width: 100%;
-          max-width: 560px;
+          max-width: 420px;
+
           border: 1px solid var(--border);
           border-radius: 14px;
           margin-left: 10px;
@@ -238,8 +283,9 @@ export default function Calendar({
         }
 
         .cal__cell {
-          height: 54px;
-          border-radius: 12px;
+          height: 48px;
+          border-radius: 10px;
+
           border: 1px solid transparent;
           background: transparent;
           cursor: pointer;
@@ -327,13 +373,19 @@ export default function Calendar({
 
         @media (max-width: 520px) {
           .cal {
-            padding: 12px;
+            padding: 10px;
+            max-width: 360px;
           }
           .cal__cell {
-            height: 46px;
+            height: 42px;
             border-radius: 10px;
           }
+
+          .cal__notes {
+            max-width: 360px;
+          }
         }
+
       `}</style>
     </section>
   )
