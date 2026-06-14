@@ -2,6 +2,7 @@
 import './App.css'
 import Sidebar from './components/layout/Sidebar'
 import Dashboards from './pages/Dashboards'
+import Patients from './pages/Patients'
 
 function App() {
   return (
@@ -10,7 +11,10 @@ function App() {
         <Sidebar />
       </div>
       <main className="flex-1 min-w-0 min-h-screen">
-        <Dashboards />
+        <Patients />
+        {/* Patients page placeholder (no routing in this project yet) */}
+        {/* <Patients /> */}
+
       </main>
     </div>
   )
